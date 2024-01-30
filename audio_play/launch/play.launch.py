@@ -23,7 +23,7 @@ def generate_launch_description():
     )
     _device_launch_arg = DeclareLaunchArgument(
         'device',
-        default_value=''
+        default_value='hw:1,0'
     )
     _do_timestamp_launch_arg = DeclareLaunchArgument(
         'do_timestamp',

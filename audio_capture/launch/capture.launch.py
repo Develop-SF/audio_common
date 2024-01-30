@@ -22,7 +22,7 @@ def generate_launch_description():
     )
     _device_launch_arg = DeclareLaunchArgument(
         'device',
-        default_value=''
+        default_value='hw:3,0'
     )
     _format_launch_arg = DeclareLaunchArgument(
         'format',
@@ -34,7 +34,7 @@ def generate_launch_description():
     )
     _channels_launch_arg = DeclareLaunchArgument(
         'channels',
-        default_value='1'
+        default_value='2'
     )
     _depth_launch_arg = DeclareLaunchArgument(
         'depth',
@@ -42,11 +42,11 @@ def generate_launch_description():
     )
     _sample_rate_launch_arg = DeclareLaunchArgument(
         'sample_rate',
-        default_value='16000'
+        default_value='48000'
     )
     _sample_format_launch_arg = DeclareLaunchArgument(
         'sample_format',
-        default_value='S16LE'
+        default_value='S24_3LE'
     )
     _ns_launch_arg = DeclareLaunchArgument(
         'ns',

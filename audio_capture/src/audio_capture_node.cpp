@@ -21,14 +21,14 @@ namespace audio_capture
       {
         gst_init(nullptr, nullptr);
 
-        _bitrate = 192;
+        _bitrate = 128;
         std::string src_type;
         std::string dst_type;
         std::string device;
 
         // Need to encoding or publish raw wave data
         this->declare_parameter<std::string>("format", "mp3");
-        this->declare_parameter<std::string>("sample_format", "S16LE");
+        this->declare_parameter<std::string>("sample_format", "S24_3LE");
         this->get_parameter("format", _format);
         this->get_parameter("sample_format", _sample_format);
 
@@ -37,21 +37,21 @@ namespace audio_capture
         this->get_parameter("bitrate", _bitrate);
 
         // only available for raw data
-        this->declare_parameter<int>("channels", 1);
+        this->declare_parameter<int>("channels", 2);
         this->declare_parameter<int>("depth", 16);
-        this->declare_parameter<int>("sample_rate", 16000);
+        this->declare_parameter<int>("sample_rate", 48000);
         this->get_parameter("channels", _channels);
         this->get_parameter("depth", _depth);
         this->get_parameter("sample_rate", _sample_rate);
 
         // The destination of the audio
-        this->declare_parameter<std::string>("dst", "appsink");
+        this->declare_parameter<std::string>("dst", "/root/ws_sns/src/sunny.mp3");
         this->get_parameter("dst", dst_type);
 
         // The source of the audio
         this->declare_parameter<std::string>("src", "alsasrc");
         this->get_parameter("src", src_type);
-        this->declare_parameter<std::string>("device", "");
+        this->declare_parameter<std::string>("device", "hw:3,0");
         this->get_parameter("device", device);
 
         _pub = this->create_publisher<audio_common_msgs::msg::AudioData>("audio", 10);
@@ -86,16 +86,18 @@ namespace audio_capture
           _sink = gst_element_factory_make("filesink", "sink");
           g_object_set( G_OBJECT(_sink), "location", dst_type.c_str(), NULL);
         }
-
+        
         _source = gst_element_factory_make(src_type.c_str(), "source");
         // if device isn't specified, it will use the default which is
         // the alsa default source.
         // A valid device will be of the foram hw:0,0 with other numbers
         // than 0 and 0 as are available.
+        
         if (device != "")
         {
           // ghcar *gst_device = device.c_str();
           g_object_set(G_OBJECT(_source), "device", device.c_str(), NULL);
+          
         }
 
         GstCaps *caps;
@@ -107,8 +109,7 @@ namespace audio_capture
                                    "rate",     G_TYPE_INT, _sample_rate,
                                    "signed",   G_TYPE_BOOLEAN, TRUE,
                                    NULL);
-
-        gboolean link_ok;
+        gboolean link_ok = true;
         if (_format == "mp3"){
           _filter = gst_element_factory_make("capsfilter", "filter");
           g_object_set( G_OBJECT(_filter), "caps", caps, NULL);
@@ -128,8 +129,8 @@ namespace audio_capture
           g_object_set( G_OBJECT(_encode), "target", 1, NULL);
           g_object_set( G_OBJECT(_encode), "bitrate", _bitrate, NULL);
 
-          gst_bin_add_many( GST_BIN(_pipeline), _source, _filter, _convert, _encode, _sink, NULL);
-          link_ok = gst_element_link_many(_source, _filter, _convert, _encode, _sink, NULL);
+          gst_bin_add_many( GST_BIN(_pipeline), _source, _convert, _encode, _sink, NULL);
+          link_ok = gst_element_link_many(_source, _convert, _encode, _sink, NULL);
         } else if (_format == "wave") {
           if (dst_type == "appsink") {
             g_object_set( G_OBJECT(_sink), "caps", caps, NULL);
@@ -156,7 +157,6 @@ namespace audio_capture
           gst_element_link_many(_source, _sink, NULL);
         }
         */
-
         if (!link_ok) {
           RCLCPP_ERROR_STREAM(this->get_logger(), "Unsupported media type.");
           exitOnMainThread(1);
@@ -234,9 +234,8 @@ namespace audio_capture
         AudioCaptureNode *server = reinterpret_cast<AudioCaptureNode*>(userData);
         GError *err;
         gchar *debug;
-
         gst_message_parse_error(message, &err, &debug);
-        // RCLCPP_ERROR_STREAM(this->get_logger(), "gstreamer: " << err->message);
+        std::cout << "gstreamer: " << err->message << std:: endl;
         g_error_free(err);
         g_free(debug);
         g_main_loop_quit(server->_loop);
