@@ -45,13 +45,13 @@ namespace audio_capture
         this->get_parameter("sample_rate", _sample_rate);
 
         // The destination of the audio
-        this->declare_parameter<std::string>("dst", "/root/ws_sns/src/sunny.mp3");
+        this->declare_parameter<std::string>("dst", "/root/shared_dir/src/audio_common/sunny.mp3");
         this->get_parameter("dst", dst_type);
 
         // The source of the audio
         this->declare_parameter<std::string>("src", "alsasrc");
         this->get_parameter("src", src_type);
-        this->declare_parameter<std::string>("device", "hw:3,0");
+        this->declare_parameter<std::string>("device", "hw:5,0");
         this->get_parameter("device", device);
 
         _pub = this->create_publisher<audio_common_msgs::msg::AudioData>("audio", 10);
@@ -136,7 +136,9 @@ namespace audio_capture
             g_object_set( G_OBJECT(_sink), "caps", caps, NULL);
             gst_caps_unref(caps);
             gst_bin_add_many( GST_BIN(_pipeline), _source, _sink, NULL);
+            RCLCPP_INFO_STREAM(this->get_logger(), "hahahahahaha");
             link_ok = gst_element_link_many( _source, _sink, NULL);
+            RCLCPP_INFO_STREAM(this->get_logger(), "ink_ok =  " << link_ok);
           } else {
             _filter = gst_element_factory_make("wavenc", "filter");
             gst_bin_add_many( GST_BIN(_pipeline), _source, _filter, _sink, NULL);

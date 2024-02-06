@@ -22,7 +22,7 @@ def generate_launch_description():
     )
     _device_launch_arg = DeclareLaunchArgument(
         'device',
-        default_value='hw:3,0'
+        default_value='hw:5,0'
     )
     _format_launch_arg = DeclareLaunchArgument(
         'format',
